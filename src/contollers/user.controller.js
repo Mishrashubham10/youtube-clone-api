@@ -3,7 +3,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/User.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import bcrypt from "bcrypt";
 import { generateAccessAndRefreshTokens } from "../middlewares/token.js";
 
 // REGISTER USER
@@ -80,13 +79,11 @@ const login = asyncHandler(async (req, res) => {
 
   const { email, username, password } = req.body;
 
-  if (!username || !email) {
-    throw new ApiError(400, "username or email is required!");
+  if (!email) {
+    throw new ApiError(400, "email is required!");
   }
 
-  const user = await User.findOne({
-    $or: [{ email }, { username }],
-  });
+  const user = await User.findOne({ email });
 
   if (!user) {
     throw new ApiError(404, "User does not exists");
@@ -105,7 +102,7 @@ const login = asyncHandler(async (req, res) => {
   );
 
   const loggedInUser = await User.findById(user._id).select(
-    "-password refreshToken"
+    "-password -refreshToken"
   );
 
   const options = {
@@ -132,11 +129,11 @@ const login = asyncHandler(async (req, res) => {
 
 // LOGOUT USER
 const logoutUser = asyncHandler(async (req, res) => {
-  User.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1, // this removes the field from document
       },
     },
     {
@@ -153,7 +150,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged out successfully"));
+    .json(new ApiResponse(200, {}, "User logged Out"));
 });
 
 export { registerUser, login, logoutUser };
