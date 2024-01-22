@@ -210,7 +210,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
 
   if (!(newPassword === confirmPassword)) {
-    throw new ApiError(401, "Password must be correct");
+    throw new ApiError(401, "Both password must be same");
   }
 
   const user = await User.findById(req.user?._id);
