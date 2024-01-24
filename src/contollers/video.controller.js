@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/asyncHandler";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 // UPLOAD VIDEO
 const getAllVideos = asyncHandler(async (req, res) => {});
